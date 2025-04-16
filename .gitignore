@@ -1,0 +1,12 @@
+# Ignore model outputs and large datasets
+histopathologic-cancer/data/
+histopathologic-cancer/outputs/
+histopathologic-cancer/venv/
+
+# Ignore Python cache
+**/__pycache__/
+*.pyc
+
+# Ignore VSCode configs
+.vscode/
+.DS_Store
