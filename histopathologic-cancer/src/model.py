@@ -1,50 +1,48 @@
 # src/model.py
 import torch
 import torch.nn as nn
-# from torchvision.models import densenet201
-from torchvision.models import densenet201, DenseNet201_Weights
+import torch.nn.functional as F
 
-class DenseNet201Classifier(nn.Module):
-    def __init__(self, use_pretrained=True):
-        super(DenseNet201Classifier, self).__init__()
-        weights = DenseNet201_Weights.DEFAULT if use_pretrained else None
-        # self.model = densenet201(weights=weights)
-        self.model = densenet201(weights=weights)
-        num_features = self.model.classifier.in_features
-        # self.model.classifier = nn.Linear(num_features, 1)
-        self.model.classifier = nn.Linear(num_features, 1)
+class DeepCustomCNN(nn.Module):
+    def __init__(self):
+        super(DeepCustomCNN, self).__init__()
+        self.conv_block = nn.Sequential(
+            nn.Conv2d(3, 32, 3, padding=1),  # (3, 224, 224) → (32, 224, 224)
+            nn.ReLU(),
+            nn.MaxPool2d(2),                # → (32, 112, 112)
+
+            nn.Conv2d(32, 64, 3, padding=1), # → (64, 112, 112)
+            nn.ReLU(),
+            nn.MaxPool2d(2),                 # → (64, 56, 56)
+
+            nn.Conv2d(64, 128, 3, padding=1), # → (128, 56, 56)
+            nn.ReLU(),
+            nn.MaxPool2d(2),                  # → (128, 28, 28)
+
+            nn.Conv2d(128, 256, 3, padding=1), # → (256, 28, 28)
+            nn.ReLU(),
+            nn.MaxPool2d(2),                   # → (256, 14, 14)
+
+            nn.Conv2d(256, 512, 3, padding=1), # → (512, 14, 14)
+            nn.ReLU(),
+            nn.MaxPool2d(2),                   # → (512, 7, 7)
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Dropout(0.5),
+            nn.Linear(4608, 256),  # ✅ FIXED from 25088 to 4608
+            nn.ReLU(),
+            nn.Linear(256, 1)
+        )
 
 
     def forward(self, x):
-        return self.model(x)
+        x = self.conv_block(x)
+        print("🧠 Flatten input shape:", x.shape)  # Add this
+        x = self.classifier(x)
+        return x
 
-import torch.nn.functional as F
 
-
-# 2 LAYERS
-
-# class HistopathologicCNN(nn.Module):
-#     def __init__(self):
-#         super(HistopathologicCNN, self).__init__()
-#         self.conv1 = nn.Conv2d(3, 32, 3)
-#         self.conv2 = nn.Conv2d(32, 64, 3)
-#         self.pool = nn.MaxPool2d(2, 2)
-#         self.dropout = nn.Dropout(0.25)
-        
-#         # ✅ Updated to correct input size: 64 * 22 * 22 = 30976
-#         self.fc1 = nn.Linear(30976, 128)
-#         self.fc2 = nn.Linear(128, 1)
-
-#     def forward(self, x):
-#         x = self.pool(F.relu(self.conv1(x)))  # Conv1 → ReLU → Pool
-#         x = self.pool(F.relu(self.conv2(x)))  # Conv2 → ReLU → Pool
-#         # print("📐 Shape before flatten:", x.shape)
-#         x = x.view(x.size(0), -1)             # Dynamically flatten
-#         # print("📐 Flattened shape:", x.shape[1])
-#         x = self.dropout(x)
-#         x = F.relu(self.fc1(x))
-#         x = torch.sigmoid(self.fc2(x))
-#         return x
 
 
 
