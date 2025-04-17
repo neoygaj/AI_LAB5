@@ -3,7 +3,9 @@ import sys, os
 sys.path.append(os.path.join(os.getcwd(), 'src'))
 
 from predict import generate_submission
-from model import HistopathologicCNN
+# from model import HistopathologicCNN
+from model import DenseNet201Classifier
+
 import torch
 
 # ADDED FOR GPU
@@ -12,8 +14,13 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"🚀 Using device: {device}")
 
 # If you saved a model previously, load it here
-model = HistopathologicCNN()
+# model = HistopathologicCNN()
 # model.load_state_dict(torch.load("outputs/model.pth"))
+
+# ADDED for DenseNet201
+model = DenseNet201Classifier(use_pretrained=False)
+
+
 
 # ADDED FOR GPU
 model.load_state_dict(torch.load("outputs/model.pth", map_location=device))

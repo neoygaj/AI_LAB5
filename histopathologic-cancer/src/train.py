@@ -2,12 +2,14 @@
 
 import torch
 import torch.nn as nn
+from torchvision.models import densenet201
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from PIL import Image
 import os
 import pandas as pd
-from model import HistopathologicCNN
+# from model import HistopathologicCNN
+from model import DenseNet201Classifier
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
@@ -82,7 +84,7 @@ def get_dataloaders(train_csv, train_dir, batch_size=64):
         transforms.Resize((96, 96)),
         transforms.RandomHorizontalFlip(),
         transforms.RandomVerticalFlip(),
-        transforms.RandomRotation(20),
+        transforms.RandomRotation(10),
         transforms.ColorJitter(brightness=0.2, contrast=0.2),
         transforms.ToTensor()
     ])
@@ -104,10 +106,12 @@ def train_model(epochs=5, save_path='outputs/model.pth'):
     # model = HistopathologicCNN()
 
     # ADDED FOR GPU
-    model = HistopathologicCNN().to(device)
+    # model = HistopathologicCNN().to(device)
+    model = DenseNet201Classifier(use_pretrained=True).to(device)
 
 
-    criterion = nn.BCELoss()
+    # criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss()  # ✅
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     train_loader, val_loader = get_dataloaders('data/train_labels.csv', 'data/train')

@@ -5,7 +5,9 @@ import torch
 from torchvision import transforms
 from PIL import Image
 import os
-from model import HistopathologicCNN
+# from model import HistopathologicCNN
+from model import DenseNet201Classifier
+
 
 # def generate_submission(model, test_dir, sample_csv, output_csv='outputs/submission.csv'):
 #     model.eval()
